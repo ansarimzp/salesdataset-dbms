@@ -67,7 +67,7 @@ use OnlineShopping;
 
 Insert Into Category Values ('Android Smart TV Box/Air Mouse');
 
-Insert Into City Values ('Karachi');
+Insert Into City Values ('Delhi');
 
 Insert Into Orders Values ('1','2011-01-27','1','318','77425889862');
 
