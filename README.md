@@ -76,19 +76,79 @@ Insert Into Product Values ('Air Mouse C120 for Android and Smart TV','1');
 Insert Into Province Values ('Punjab');
 
 Insert Into Review Values ('4','Great Product Slow delivery. Such slow much wow','1','1');
-# 4. Queries
-Complete scripts are available in Queries folder.
+# 4. Interview questions 
+## 4.1 What is the difference between WHERE and HAVING?
+-- WHERE filters rows before grouping
+SELECT VendorID, COUNT(*) AS TotalProducts
+FROM VendorProduct
+WHERE Price > 1000
+GROUP BY VendorID;
 
-A particular vendor's categories of products he's selling
-select CategoryName
-from Category
-where CategoryID in
-					(select Distinct CategoryID
-					from Product
-					where ProductID in
-									(select ProductID
-									from VendorProduct
-									where VendorID='3'));
-Average Age of Customers
-select sum(DATEDIFF ( year , customer.DOB , getdate() ))/Count(customerid) as "Average Age"
-from Customer
+-- HAVING filters after grouping
+SELECT VendorID, COUNT(*) AS TotalProducts
+FROM VendorProduct
+GROUP BY VendorID
+HAVING COUNT(*) > 5;
+## 4.2 What are the different types of joins?
+-- INNER JOIN (Only matching rows)
+SELECT c.FirstName, o.OrderID
+FROM Customer c
+INNER JOIN Orders o ON c.CustomerID = o.CustomerID;
+
+-- LEFT JOIN (All customers and their orders, if any)
+SELECT c.FirstName, o.OrderID
+FROM Customer c
+LEFT JOIN Orders o ON c.CustomerID = o.CustomerID;
+
+-- RIGHT JOIN (All orders and the customer info, if any)
+SELECT c.FirstName, o.OrderID
+FROM Customer c
+RIGHT JOIN Orders o ON c.CustomerID = o.CustomerID;
+
+-- FULL OUTER JOIN is not supported in MySQL directly,
+-- But can be simulated using UNION of LEFT and RIGHT JOINs.
+## 4.3 How do you calculate Average Revenue Per User (ARPU)?
+
+SELECT 
+  ROUND(SUM(vp.Price * op.Quantity) / COUNT(DISTINCT o.CustomerID), 2) AS ARPU
+FROM Orders o
+JOIN OrderedProduct op ON o.OrderID = op.OrderID
+JOIN VendorProduct vp ON op.VendorProductID = vp.VendorProductID;
+
+## 4.4 What are subqueries?
+
+SELECT FirstName, LastName
+FROM Customer
+WHERE CustomerID IN (
+  SELECT o.CustomerID
+  FROM Orders o
+  JOIN OrderedProduct op ON o.OrderID = op.OrderID
+  GROUP BY o.CustomerID
+  HAVING SUM(op.Quantity) > 5
+);
+
+## 4.5  How do you optimize a SQL query?
+Based on your schema:
+
+Add indexes on columns often used in JOIN, WHERE, ORDER BY (e.g., CustomerID, OrderID, VendorID).
+
+Use LIMIT for pagination.
+
+Avoid SELECT *; select only needed columns.
+
+Use EXISTS instead of IN for large subqueries.
+
+## 4.6 What is a view in SQL?
+
+CREATE VIEW ProductCatalog AS
+SELECT p.ProductName, vp.Price, v.Name AS VendorName
+FROM Product p
+JOIN VendorProduct vp ON p.ProductID = vp.ProductID
+JOIN Vendor v ON vp.VendorID = v.VendorID;
+
+## 4.7 How would you handle NULL values in SQL?
+
+SELECT 
+  r.Rating,
+  COALESCE(r.Comment, 'No comment provided') AS Comment
+FROM Review r;
